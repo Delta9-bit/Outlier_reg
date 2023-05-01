@@ -135,20 +135,20 @@ def alpha_diff(vec_1, vec_2, Z_base, Z_reg):
     return sum(alpha_dist) / len(alpha_dist)
 
 
-def centroid_estimate(X, style, kernel_params):
-    if style == 'mean':
+def centroid_estimate(X, centroid, kernel_params):
+    if centroid == 'mean':
         return np.mean(X, axis=0)
-    elif style == 'mode':
+    elif centroid == 'mode':
         kernel = KernelDensity(**kernel_params)
         kernel.fit(X)
         kernel_scores = np.exp(kernel.score_samples(X))
         mode_idx = kernel_scores.argmax()
         mode = X[mode_idx, :]
         return mode
-    elif style == 'median':
+    elif centroid == 'median':
         return np.median(X, axis=0)
     else:
-        raise ValueError(f'{style} is not a correct argument. Please use \'mean\' or \'mode\'')
+        raise ValueError(f'{centroid} is not a correct argument. Please use \'mean\' or \'mode\'')
 
 
 def random_quantile(array, q, steps):
@@ -176,7 +176,7 @@ def random_quantile(array, q, steps):
     return quantile
 
 
-def outlier_reg(features, label, classifier, style='median', kernel_params={}, k=10, q=0.99, steps=5):
+def outlier_reg(features, label, classifier, centroid='median', kernel_params={}, k=10, q=0.99, steps=5):
     # =============================================================================
     # Initialization
     # =============================================================================
@@ -205,7 +205,7 @@ def outlier_reg(features, label, classifier, style='median', kernel_params={}, k
     # Covariance matrix and centroid estimation
     # across the entire sample
     sub_dic['inv_covar'] = np.linalg.matrix_power(np.cov(features, rowvar=False), -1)
-    sub_dic['centroid'] = centroid_estimate(features, style, kernel_params)
+    sub_dic['centroid'] = centroid_estimate(features, centroid, kernel_params)
     attrib['data'] = sub_dic
 
     # =============================================================================
@@ -224,7 +224,7 @@ def outlier_reg(features, label, classifier, style='median', kernel_params={}, k
 
         # covariance matrix estimation for classes
         sub_dic['inv_covar'] = np.linalg.matrix_power(np.cov(class_features, rowvar=False), -1)
-        sub_dic['centroid'] = centroid_estimate(class_features, style, kernel_params)
+        sub_dic['centroid'] = centroid_estimate(class_features, centroid, kernel_params)
         attrib[classes] = sub_dic
 
         # Mahalanobis Distance to centroid
@@ -321,7 +321,7 @@ def outlier_reg(features, label, classifier, style='median', kernel_params={}, k
     return results_df
 
 
-def kstage(features, label, classifier, style='median', kernel_params={}, k=10, q=0.99, steps=10):
+def multistage_npor(features, label, classifier, centroid='median', kernel_params={}, k=10, q=0.99, steps=10):
 
     # =============================================================================
     # init
@@ -359,7 +359,7 @@ def kstage(features, label, classifier, style='median', kernel_params={}, k=10, 
         loop += 1
 
         # outlier search
-        outliers = outlier_reg(features, label, classifier, style, kernel_params, k, q, steps)
+        outliers = outlier_reg(features, label, classifier, centroid, kernel_params, k, q, steps)
 
         # print progress
         print(f"-- step n° {loop} --")
