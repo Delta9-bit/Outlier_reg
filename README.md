@@ -6,7 +6,7 @@ please read the instructions below.
 
 From the files in Outliers_reg/Code/ you have access to all the source code. The main function is the `multistage_npor` function.
 
-⚠️ The `multispage_npor` function internally scales the features with MinMax scaling. Feature **do not** need to be scaled.
+⚠️ The `multispage_npor` function internally scales the features with MinMax scaling. Features **do not** need to be scaled.
 
 ---
 
